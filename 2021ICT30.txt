@@ -1,0 +1,111 @@
+IT3223 ADBMS
+2021/ICT/30
+
+Date : 2026.02.19
+==================================================
+
+1)create two users Student_1 and Student_2 with the password '123456' 
+  at the localhost 
+  
+CREATE USER student_1@localhost IDENTIFIED BY '123456';
+CREATE USER student_2@localhost IDENTIFIED BY '123456';
+  
+-------------------------------------------------
+  
+2) list down the created users
+
+ SHOW databases;
+ USE mysql;
+ SHOW tables;
+ 
+SELECT user,host,password FROM user;
+
+DROP USER 2021ICT30@localhost;
+
+MariaDB [mysql]> SELECT user,host,password FROM user;
++-----------+-----------+-------------------------------------------+
+| User      | Host      | Password                                  |
++-----------+-----------+-------------------------------------------+
+| root      | localhost |                                           |
+| root      | 127.0.0.1 |                                           |
+| root      | ::1       |                                           |
+| pma       | localhost |                                           |
+| student_1 | localhost | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
+| student_2 | localhost | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
++-----------+-----------+-------------------------------------------+
+6 rows in set (0.001 sec)
+
+-------------------------------------------------
+
+3) change the username of Student_1 with your Registration NUMBER
+
+UPDATE user 
+set user='2021ICT30' 
+WHERE user='student_1';
+
+-------------------------------------------------
+
+4) list down the username and password
+
+
+MariaDB [mysql]> SELECT user,host,password FROM user;
++-----------+-----------+-------------------------------------------+
+| User      | Host      | Password                                  |
++-----------+-----------+-------------------------------------------+
+| root      | localhost |                                           |
+| root      | 127.0.0.1 |                                           |
+| root      | ::1       |                                           |
+| pma       | localhost |                                           |
+| 2021ICT30 | localhost | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
+| student_2 | localhost | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
++-----------+-----------+-------------------------------------------+
+6 rows in set (0.001 sec)
+
+-------------------------------------------------
+
+5) change the password of Student_2 with a new password 
+
+SET password 
+FOR 'student_2'@localhost=password('ict@123');
+
+-------------------------------------------------
+
+6) list down username and password again.
+
+MariaDB [mysql]> SELECT user,host,password FROM user;
++-----------+-----------+-------------------------------------------+
+| User      | Host      | Password                                  |
++-----------+-----------+-------------------------------------------+
+| root      | localhost |                                           |
+| root      | 127.0.0.1 |                                           |
+| root      | ::1       |                                           |
+| pma       | localhost |                                           |
+| 2021ICT30 | localhost | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
+| student_2 | localhost | *193296A24DF635BD8F1D883BEAEC1D589F05463D |
++-----------+-----------+-------------------------------------------+
+6 rows in set (0.001 sec)
+
+-------------------------------------------------
+
+7) change the host of student_2 to 'vau.ac.lk'
+
+UPDATE user 
+set host='vau.ac.lk' 
+WHERE user='student_2';
+
+-------------------------------------------------
+
+8) list down the username and host name 
+
+MariaDB [mysql]> SELECT user,host,password FROM user;
++-----------+-----------+-------------------------------------------+
+| User      | Host      | Password                                  |
++-----------+-----------+-------------------------------------------+
+| root      | localhost |                                           |
+| root      | 127.0.0.1 |                                           |
+| root      | ::1       |                                           |
+| pma       | localhost |                                           |
+| 2021ICT30 | localhost | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
+| student_2 | vau.ac.lk | *193296A24DF635BD8F1D883BEAEC1D589F05463D |
++-----------+-----------+-------------------------------------------+
+6 rows in set (0.001 sec)
