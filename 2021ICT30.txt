@@ -1,0 +1,493 @@
+IT3223 ADBMS
+2021/ICT/30
+
+Date : 2026.03.05
+==================================================
+
+CREATE DATABASE HospitalDB;
+
+USE HospitalDB;
+
+CREATE TABLE Doctor (
+    Doctor_id INT(5) PRIMARY KEY,
+    Name VARCHAR(50),
+    Specification VARCHAR(20),
+	Phone VARCHAR(15)
+);
+
+desc Doctor;
++---------------+-------------+------+-----+---------+-------+
+| Field         | Type        | Null | Key | Default | Extra |
++---------------+-------------+------+-----+---------+-------+
+| Doctor_id     | int         | NO   | PRI | NULL    |       |
+| Name          | varchar(50) | YES  |     | NULL    |       |
+| Specification | varchar(20) | YES  |     | NULL    |       |
+| Phone         | varchar(15) | YES  |     | NULL    |       |
++---------------+-------------+------+-----+---------+-------+
+
+CREATE TABLE Patient (
+    Patient_id INT(5) PRIMARY KEY,
+    Name VARCHAR(50),
+    Birth_date DATE,
+    Gender VARCHAR(10),
+	Address VARCHAR(40)
+);
+
+desc Patient;
++------------+-------------+------+-----+---------+-------+
+| Field      | Type        | Null | Key | Default | Extra |
++------------+-------------+------+-----+---------+-------+
+| Patient_id | int         | NO   | PRI | NULL    |       |
+| Name       | varchar(50) | YES  |     | NULL    |       |
+| Birth_date | date        | YES  |     | NULL    |       |
+| Gender     | varchar(10) | YES  |     | NULL    |       |
+| Address    | varchar(40) | YES  |     | NULL    |       |
++------------+-------------+------+-----+---------+-------+
+
+
+
+CREATE TABLE Appointment (
+    Appointment_id INT(5) PRIMARY KEY ,
+    Patient_id INT(5),
+	Doctor_id INT(5),
+    Appointment_date DATE,
+    Status VARCHAR(20),
+    FOREIGN KEY (Patient_id) REFERENCES Patient(Patient_id),
+    FOREIGN KEY (Doctor_id) REFERENCES Doctor(Doctor_id)
+);
+
+desc Appointment;
++------------------+-------------+------+-----+---------+-------+
+| Field            | Type        | Null | Key | Default | Extra |
++------------------+-------------+------+-----+---------+-------+
+| Appointment_id   | int         | NO   | PRI | NULL    |       |
+| Patient_id       | int         | YES  | MUL | NULL    |       |
+| Doctor_id        | int         | YES  | MUL | NULL    |       |
+| Appointment_date | date        | YES  |     | NULL    |       |
+| Status           | varchar(10) | YES  |     | NULL    |       |
++------------------+-------------+------+-----+---------+-------+
+
+
+CREATE TABLE Treatment (
+    Treatment_id INT(5) PRIMARY KEY ,
+    Appointment_id INT(5),
+    Description VARCHAR(30),
+    Cost Double,
+    FOREIGN KEY (Appointment_id) REFERENCES Appointment(Appointment_id)
+);
+
+desc Treatment;
++----------------+-------------+------+-----+---------+-------+
+| Field          | Type        | Null | Key | Default | Extra |
++----------------+-------------+------+-----+---------+-------+
+| Treatment_id   | int         | NO   | PRI | NULL    |       |
+| Appointment_id | int         | YES  | MUL | NULL    |       |
+| Description    | varchar(20) | YES  |     | NULL    |       |
+| Cost           | double      | YES  |     | NULL    |       |
++----------------+-------------+------+-----+---------+-------+
+
+
+CREATE TABLE Prescription (
+    Prescription_id INT(5) PRIMARY KEY ,
+    Appointment_id INT(5),
+    Medicine VARCHAR(30),
+    Dosage VARCHAR(30),
+    FOREIGN KEY (Appointment_id) REFERENCES Appointment(Appointment_id)
+);
+
+desc Prescription;
++-----------------+-------------+------+-----+---------+-------+
+| Field           | Type        | Null | Key | Default | Extra |
++-----------------+-------------+------+-----+---------+-------+
+| Prescription_id | int         | NO   | PRI | NULL    |       |
+| Appointment_id  | int         | YES  | MUL | NULL    |       |
+| Medicine        | varchar(20) | YES  |     | NULL    |       |
+| Dosage          | varchar(20) | YES  |     | NULL    |       |
++-----------------+-------------+------+-----+---------+-------+
+
+SHOW tables;
++----------------------+
+| Tables_in_hospitaldb |
++----------------------+
+| appointment          |
+| doctor               |
+| patient              |
+| prescription         |
+| treatment            |
++----------------------+
+
+/*1. Doctors Table  */
+
+INSERT INTO Doctor VALUES(1, 'Dr. John Doe',' Cardiology','021-222-1234');
+INSERT INTO Doctor VALUES(2,' Dr. Sarah Smith    ',' Neurology      ', '021-222-2345');     
+INSERT INTO Doctor VALUES(3,' Dr. James Brown    ',' Pediatrics     ', '021-222-3456');     
+INSERT INTO Doctor VALUES(4,' Dr. Lisa White     ',' Orthopedics    ', '021-222-4567');     
+INSERT INTO Doctor VALUES(5,' Dr. Michael Black  ',' Dermatology    ', '021-222-5678');     
+INSERT INTO Doctor VALUES(6,' Dr. Emily Green    ',' General        ', '021-222-6789');     
+INSERT INTO Doctor VALUES(7,' Dr. Daniel Lee     ',' Cardiology     ', '021-222-7890');     
+INSERT INTO Doctor VALUES(8,' Dr. Linda Clark    ',' Neurology      ', '021-222-8901');     
+INSERT INTO Doctor VALUES(9,' Dr. Steven Turner  ',' Pediatrics     ', '021-222-9012');     
+INSERT INTO Doctor VALUES(10,' Dr. Jessica Martinez',' Orthopedics   ', '021-222-0123');   
+
+SELECT * FROM Doctor;
++-----------+-----------------------+------------------+--------------+
+| Doctor_id | Name                  | Specification    | Phone        |
++-----------+-----------------------+------------------+--------------+
+|         1 | Dr. John Doe          |  Cardiology      | 021-222-1234 |
+|         2 |  Dr. Sarah Smith      |  Neurology       | 021-222-2345 |
+|         3 |  Dr. James Brown      |  Pediatrics      | 021-222-3456 |
+|         4 |  Dr. Lisa White       |  Orthopedics     | 021-222-4567 |
+|         5 |  Dr. Michael Black    |  Dermatology     | 021-222-5678 |
+|         6 |  Dr. Emily Green      |  General         | 021-222-6789 |
+|         7 |  Dr. Daniel Lee       |  Cardiology      | 021-222-7890 |
+|         8 |  Dr. Linda Clark      |  Neurology       | 021-222-8901 |
+|         9 |  Dr. Steven Turner    |  Pediatrics      | 021-222-9012 |
+|        10 |  Dr. Jessica Martinez |  Orthopedics     | 021-222-0123 |
++-----------+-----------------------+------------------+--------------+
+
+
+
+/*2. Patients Table*/
+
+INSERT INTO Patient VALUES( 1  ,' Alice Johnson      ', '1985-05-12' ,' Female ',' 123 Elm St');
+INSERT INTO Patient VALUES( 2  ,' Bob Miller         ', '1990-02-23' ,' Male   ',' 456 Oak St');
+INSERT INTO Patient VALUES( 3  ,' Charlie Davis      ', '2001-07-30' ,' Male   ',' 789 Pine St');
+INSERT INTO Patient VALUES( 4  ,' Diana Wilson       ', '1975-09-14' ,' Female ',' 101 Maple St');
+INSERT INTO Patient VALUES( 5  ,' Eve Moore          ', '1982-04-19' ,' Female ',' 202 Birch St');
+INSERT INTO Patient VALUES(6   ,' Frank Harris       ', '1995-01-08' ,' Male   ',' 303 Cedar St');
+INSERT INTO Patient VALUES(7   ,' Grace Clark        ', '1989-12-25' ,' Female ',' 404 Pine St');
+INSERT INTO Patient VALUES( 8  ,' Henry Lewis        ', '2000-03-14' ,' Male   ',' 505 Maple St');
+INSERT INTO Patient VALUES(9   ,' Irene Robinson     ', '1983-06-22' ,' Female ',' 606 Oak St');
+INSERT INTO Patient VALUES(10  ,' Jack Walker        ', '1998-11-01' ,' Male   ',' 707 Birch St');
+
+SELECT * FROM Patient;
++------------+----------------------+------------+----------+---------------+
+| Patient_id | Name                 | Birth_date | Gender   | Address       |
++------------+----------------------+------------+----------+---------------+
+|          1 |  Alice Johnson       | 1985-05-12 |  Female  |  123 Elm St   |
+|          2 |  Bob Miller          | 1990-02-23 |  Male    |  456 Oak St   |
+|          3 |  Charlie Davis       | 2001-07-30 |  Male    |  789 Pine St  |
+|          4 |  Diana Wilson        | 1975-09-14 |  Female  |  101 Maple St |
+|          5 |  Eve Moore           | 1982-04-19 |  Female  |  202 Birch St |
+|          6 |  Frank Harris        | 1995-01-08 |  Male    |  303 Cedar St |
+|          7 |  Grace Clark         | 1989-12-25 |  Female  |  404 Pine St  |
+|          8 |  Henry Lewis         | 2000-03-14 |  Male    |  505 Maple St |
+|          9 |  Irene Robinson      | 1983-06-22 |  Female  |  606 Oak St   |
+|         10 |  Jack Walker         | 1998-11-01 |  Male    |  707 Birch St |
++------------+----------------------+------------+----------+---------------+
+
+
+/*3. Appointment Table */ 
+
+INSERT INTO Appointment VALUES(1, 1  , 2  ,'2026-04-10',' Scheduled ');
+INSERT INTO Appointment VALUES(2, 2, 1 , '2026-04-15',' Scheduled ');
+INSERT INTO Appointment VALUES(3, 3, 5 , '2026-04-12' ,' Scheduled ');
+INSERT INTO Appointment VALUES(4, 4, 3 ,'2026-04-20' ,' Scheduled ');
+INSERT INTO Appointment VALUES(5, 5, 2 , '2026-04-18',' Scheduled ');
+INSERT INTO Appointment VALUES(6, 6, 4 , '2026-04-25',' Scheduled ');
+INSERT INTO Appointment VALUES(7, 7, 6 , '2026-04-17',' Scheduled ');
+INSERT INTO Appointment VALUES(8, 8, 7 , '2026-04-22',' Scheduled ');
+INSERT INTO Appointment VALUES(9, 9, 8 , '2026-04-14' ,' Scheduled ');
+INSERT INTO Appointment VALUES(10, 10, 9 , '2026-04-24',' Scheduled ');
+
+SELECT * FROM Appointment;
++----------------+------------+-----------+------------------+-------------+
+| Appointment_id | Patient_id | Doctor_id | Appointment_date | Status      |
++----------------+------------+-----------+------------------+-------------+
+|              1 |          1 |         2 | 2026-04-10       |  Scheduled  |
+|              2 |          2 |         1 | 2026-04-15       |  Scheduled  |
+|              3 |          3 |         5 | 2026-04-12       |  Scheduled  |
+|              4 |          4 |         3 | 2026-04-20       |  Scheduled  |
+|              5 |          5 |         2 | 2026-04-18       |  Scheduled  |
+|              6 |          6 |         4 | 2026-04-25       |  Scheduled  |
+|              7 |          7 |         6 | 2026-04-17       |  Scheduled  |
+|              8 |          8 |         7 | 2026-04-22       |  Scheduled  |
+|              9 |          9 |         8 | 2026-04-14       |  Scheduled  |
+|             10 |         10 |         9 | 2026-04-24       |  Scheduled  |
++----------------+------------+-----------+------------------+-------------+
+
+
+/*4. Treatments Table */ 
+
+INSERT INTO Treatment VALUES( 1, 1,' X-ray          ', 150.00 );
+INSERT INTO Treatment VALUES( 2, 2,' MRI            ', 300.00 );
+INSERT INTO Treatment VALUES( 3, 3 ,' Blood Test     ', 100.00 );
+INSERT INTO Treatment VALUES( 4, 4 ,' Physical Therapy ', 200.00 );
+INSERT INTO Treatment VALUES( 5, 5 ,' Medication     ',50.00  );
+INSERT INTO Treatment VALUES( 6, 6 ,' Surgery        ', 800.00 );
+INSERT INTO Treatment VALUES( 7, 7,' MRI            ', 300.00 );
+INSERT INTO Treatment VALUES( 8, 8,' X-ray          ', 150.00 );
+INSERT INTO Treatment VALUES( 9 , 9 ,' Blood Test     ', 100.00 );
+INSERT INTO Treatment VALUES( 10, 10 ,' Physical Therapy ', 200.00 );
+
+SELECT * FROM Treatment;
++--------------+----------------+--------------------+------+
+| Treatment_id | Appointment_id | Description        | Cost |
++--------------+----------------+--------------------+------+
+|            1 |              1 |  X-ray             |  150 |
+|            2 |              2 |  MRI               |  300 |
+|            3 |              3 |  Blood Test        |  100 |
+|            4 |              4 |  Physical Therapy  |  200 |
+|            5 |              5 |  Medication        |   50 |
+|            6 |              6 |  Surgery           |  800 |
+|            7 |              7 |  MRI               |  300 |
+|            8 |              8 |  X-ray             |  150 |
+|            9 |              9 |  Blood Test        |  100 |
+|           10 |             10 |  Physical Therapy  |  200 |
++--------------+----------------+--------------------+------+
+
+
+/*5. Prescriptions Table*/ 
+
+INSERT INTO Prescription VALUES( 1,1,' Paracetamol  ',' 1 tablet twice a day' );
+INSERT INTO Prescription VALUES(  2, 2,' Ibuprofen      ',' 2 tablets daily   ' );
+INSERT INTO Prescription VALUES(  3 , 3 ,' Amoxicillin    ',' 1 capsule thrice a day ' );
+INSERT INTO Prescription VALUES(  4, 4 ,' Metformin      ',' 1 tablet after meals  ' );
+INSERT INTO Prescription VALUES(  5 , 5,' Lisinopril     ',' 1 tablet daily      ' );
+INSERT INTO Prescription VALUES(  6 , 6 ,' Amlodipine     ',' 1 tablet daily   ' );
+INSERT INTO Prescription VALUES(  7 , 7 ,' Paracetamol    ',' 1 tablet twice a day  ' );
+INSERT INTO Prescription VALUES(  8 , 8 ,' Ibuprofen      ',' 2 tablets daily    ' );
+INSERT INTO Prescription VALUES(  9 , 9 ,' Amoxicillin    ',' 1 capsule thrice a day ' );
+INSERT INTO Prescription VALUES(  10, 10 ,' Metformin      ',' 1 tablet after meals ' );
+
+SELECT * FROM Prescription;
++-----------------+----------------+------------------+--------------------------+
+| Prescription_id | Appointment_id | Medicine         | Dosage                   |
++-----------------+----------------+------------------+--------------------------+
+|               1 |              1 |  Paracetamol     |  1 tablet twice a day    |
+|               2 |              2 |  Ibuprofen       |  2 tablets daily         |
+|               3 |              3 |  Amoxicillin     |  1 capsule thrice a day  |
+|               4 |              4 |  Metformin       |  1 tablet after meals    |
+|               5 |              5 |  Lisinopril      |  1 tablet daily          |
+|               6 |              6 |  Amlodipine      |  1 tablet daily          |
+|               7 |              7 |  Paracetamol     |  1 tablet twice a day    |
+|               8 |              8 |  Ibuprofen       |  2 tablets daily         |
+|               9 |              9 |  Amoxicillin     |  1 capsule thrice a day  |
+|              10 |             10 |  Metformin       |  1 tablet after meals    |
++-----------------+----------------+------------------+--------------------------+
+
+--------------------------------------------------------------------------
+01) List all doctors. 
+
+SELECT Name FROM Doctor;
++-----------------------+
+| Name                  |
++-----------------------+
+| Dr. John Doe          |
+|  Dr. Sarah Smith      |
+|  Dr. James Brown      |
+|  Dr. Lisa White       |
+|  Dr. Michael Black    |
+|  Dr. Emily Green      |
+|  Dr. Daniel Lee       |
+|  Dr. Linda Clark      |
+|  Dr. Steven Turner    |
+|  Dr. Jessica Martinez |
++-----------------------+
+
+--------------------------------------------------------------------------
+02) List all patients who are female.
+
+SELECT * FROM Patient
+WHERE Gender like '%Female%';
++------------+----------------------+------------+----------+---------------+
+| Patient_id | Name                 | Birth_date | Gender   | Address       |
++------------+----------------------+------------+----------+---------------+
+|          1 |  Alice Johnson       | 1985-05-12 |  Female  |  123 Elm St   |
+|          4 |  Diana Wilson        | 1975-09-14 |  Female  |  101 Maple St |
+|          5 |  Eve Moore           | 1982-04-19 |  Female  |  202 Birch St |
+|          7 |  Grace Clark         | 1989-12-25 |  Female  |  404 Pine St  |
+|          9 |  Irene Robinson      | 1983-06-22 |  Female  |  606 Oak St   |
++------------+----------------------+------------+----------+---------------+
+
+--------------------------------------------------------------------------
+03) Get all appointments for patient with `patient_id` = 3. 
+
+SELECT * FROM Appointment
+WHERE Patient_id = 3;
++----------------+------------+-----------+------------------+-------------+
+| Appointment_id | Patient_id | Doctor_id | Appointment_date | Status      |
++----------------+------------+-----------+------------------+-------------+
+|              3 |          3 |         5 | 2026-04-12       |  Scheduled  |
++----------------+------------+-----------+------------------+-------------+
+
+--------------------------------------------------------------------------
+04) List all treatments with their costs.
+
+SELECT * FROM Treatment;
++--------------+----------------+--------------------+------+
+| Treatment_id | Appointment_id | Description        | Cost |
++--------------+----------------+--------------------+------+
+|            1 |              1 |  X-ray             |  150 |
+|            2 |              2 |  MRI               |  300 |
+|            3 |              3 |  Blood Test        |  100 |
+|            4 |              4 |  Physical Therapy  |  200 |
+|            5 |              5 |  Medication        |   50 |
+|            6 |              6 |  Surgery           |  800 |
+|            7 |              7 |  MRI               |  300 |
+|            8 |              8 |  X-ray             |  150 |
+|            9 |              9 |  Blood Test        |  100 |
+|           10 |             10 |  Physical Therapy  |  200 |
++--------------+----------------+--------------------+------+
+
+--------------------------------------------------------------------------
+05) Get the total cost of treatments for patient with `patient_id` = 2. 
+
+SELECT SUM(T.Cost) AS TotalCost
+FROM Treatment T
+JOIN Appointment A ON T.Appointment_id = A.Appointment_id
+WHERE A.Patient_id = 2;
+
++-----------+
+| TotalCost |
++-----------+
+|       300 |
++-----------+
+--------------------------------------------------------------------------
+06) Get the details of doctors who specialize in "Cardiology".
+
+SELECT * FROM doctor
+WHERE Specification like '%Cardiology%';
+
++-----------+----------------------+------------------+--------------+
+| Doctor_id | Name                 | Specification    | Phone        |
++-----------+----------------------+------------------+--------------+
+|         1 | Dr. John Doe         |  Cardiology      | 021-222-1234 |
+|         7 |  Dr. Daniel Lee      |  Cardiology      | 021-222-7890 |
++-----------+----------------------+------------------+--------------+
+
+--------------------------------------------------------------------------
+07) List appointments scheduled after `2025-04-15`. 
+
+SELECT * FROM Appointment
+WHERE Appointment_date > '2025-04-15';
++----------------+------------+-----------+------------------+-------------+
+| Appointment_id | Patient_id | Doctor_id | Appointment_date | Status      |
++----------------+------------+-----------+------------------+-------------+
+|              1 |          1 |         2 | 2026-04-10       |  Scheduled  |
+|              2 |          2 |         1 | 2026-04-15       |  Scheduled  |
+|              3 |          3 |         5 | 2026-04-12       |  Scheduled  |
+|              4 |          4 |         3 | 2026-04-20       |  Scheduled  |
+|              5 |          5 |         2 | 2026-04-18       |  Scheduled  |
+|              6 |          6 |         4 | 2026-04-25       |  Scheduled  |
+|              7 |          7 |         6 | 2026-04-17       |  Scheduled  |
+|              8 |          8 |         7 | 2026-04-22       |  Scheduled  |
+|              9 |          9 |         8 | 2026-04-14       |  Scheduled  |
+|             10 |         10 |         9 | 2026-04-24       |  Scheduled  |
++----------------+------------+-----------+------------------+-------------+
+
+--------------------------------------------------------------------------
+08) Find the most recent appointment for patient `1`.
+
+SELECT *
+FROM Appointment
+WHERE Patient_id = 1
+ORDER BY Appointment_date DESC
+LIMIT 1;
+
++----------------+------------+-----------+------------------+-------------+
+| Appointment_id | Patient_id | Doctor_id | Appointment_date | Status      |
++----------------+------------+-----------+------------------+-------------+
+|              1 |          1 |         2 | 2026-04-10       |  Scheduled  |
++----------------+------------+-----------+------------------+-------------+
+
+--------------------------------------------------------------------------
+09) List all patients who have a scheduled appointment with a doctor specializing in 
+"Neurology". 
+
+SELECT DISTINCT P.*
+FROM Patient P
+JOIN Appointment A ON P.Patient_id = A.Patient_id
+JOIN Doctor D ON A.Doctor_id = D.Doctor_id
+WHERE D.Specification = 'Neurology';
+?????????????????????
+
+--------------------------------------------------------------------------
+10) Get all treatments that cost more than `200`. 
+
+SELECT * FROM Treatment
+WHERE Cost > 200;
++--------------+----------------+------------------+------+
+| Treatment_id | Appointment_id | Description      | Cost |
++--------------+----------------+------------------+------+
+|            2 |              2 |  MRI             |  300 |
+|            6 |              6 |  Surgery         |  800 |
+|            7 |              7 |  MRI             |  300 |
++--------------+----------------+------------------+------+
+
+--------------------------------------------------------------------------
+11) List all doctors with their total number of appointments.
+
+SELECT D.Name, COUNT(A.Appointment_id) AS TotalAppointments
+FROM Doctor D
+LEFT JOIN Appointment A ON D.Doctor_id = A.Doctor_id
+GROUP BY D.Name;
++-----------------------+-------------------+
+| Name                  | TotalAppointments |
++-----------------------+-------------------+
+| Dr. John Doe          |                 1 |
+|  Dr. Sarah Smith      |                 2 |
+|  Dr. James Brown      |                 1 |
+|  Dr. Lisa White       |                 1 |
+|  Dr. Michael Black    |                 1 |
+|  Dr. Emily Green      |                 1 |
+|  Dr. Daniel Lee       |                 1 |
+|  Dr. Linda Clark      |                 1 |
+|  Dr. Steven Turner    |                 1 |
+|  Dr. Jessica Martinez |                 0 |
++-----------------------+-------------------+
+
+--------------------------------------------------------------------------
+12) Get the most commonly prescribed medication.
+
+SELECT Medicine, COUNT(*) AS TimesPrescribed
+FROM Prescription
+GROUP BY Medicine
+ORDER BY TimesPrescribed DESC
+LIMIT 1;
++------------------+-----------------+
+| Medicine         | TimesPrescribed |
++------------------+-----------------+
+|  Ibuprofen       |               2 |
++------------------+-----------------+
+
+
+--------------------------------------------------------------------------
+13) Find all patients who were born before `1990-01-01`. 
+
+SELECT * FROM Patient
+WHERE Birth_date < '1990-01-01';
++------------+----------------------+------------+----------+---------------+
+| Patient_id | Name                 | Birth_date | Gender   | Address       |
++------------+----------------------+------------+----------+---------------+
+|          1 |  Alice Johnson       | 1985-05-12 |  Female  |  123 Elm St   |
+|          4 |  Diana Wilson        | 1975-09-14 |  Female  |  101 Maple St |
+|          5 |  Eve Moore           | 1982-04-19 |  Female  |  202 Birch St |
+|          7 |  Grace Clark         | 1989-12-25 |  Female  |  404 Pine St  |
+|          9 |  Irene Robinson      | 1983-06-22 |  Female  |  606 Oak St   |
++------------+----------------------+------------+----------+---------------+
+
+--------------------------------------------------------------------------
+14)  List all prescriptions for the appointment with `appointment_id` = 6.
+
+SELECT * FROM Prescription
+WHERE Appointment_id = 6;
+
++-----------------+----------------+------------------+--------------------+
+| Prescription_id | Appointment_id | Medicine         | Dosage             |
++-----------------+----------------+------------------+--------------------+
+|               6 |              6 |  Amlodipine      |  1 tablet daily    |
++-----------------+----------------+------------------+--------------------+
+
+--------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
