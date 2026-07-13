@@ -1,0 +1,385 @@
+IT3243 ADBMS
+2021/ICT/30
+
+Date : 2026.03.23
+==================================================
+
+
+-- Example
+show databases;
+use customer_db;
+
+-- Ex1
+DELIMITER $$ 
+CREATE PROCEDURE show_message() 
+BEGIN 
+SELECT 'Welcome to MySQL Stored Procedures'; 
+END $$
+
+CALL show_message(); 
+
+-- Ex2
+DELIMITER // 
+CREATE PROCEDURE GetCustomerInfo(IN CustomerAge INT) 
+BEGIN 
+SELECT * FROM CUSTOMERS WHERE AGE = CustomerAge; 
+END // 
+DELIMITER ;
+
+CALL GetCustomerInfo(25); 
+
+-- Procedure with IN parameter 
+DELIMITER // 
+CREATE PROCEDURE GetCustomerSalary(IN CustomerID Int) 
+BEGIN 
+SELECT SALARY FROM CUSTOMERS WHERE ID = CustomerID; 
+END // 
+DELIMITER ;
+
+CALL GetCustomerSalary(6);
+
+show tables;
+
+select * from customers;
+
+-- Exercise
+-- 1.
+CALL GetCustomerSalary(4);
+
+-- 2
+DELIMITER // 
+CREATE PROCEDURE GetCustomerAgeName(IN CustomerID Int) 
+BEGIN 
+SELECT Name,Age  FROM CUSTOMERS WHERE ID = CustomerID; 
+END // 
+DELIMITER ;
+
+CALL GetCustomerAgeName(7);
+
+
+select * from customers;
+
+desc customers;
+
+
+select * from customers;
+
+
+select * from customers;
+
+-- 3
+DELIMITER // 
+CREATE PROCEDURE GetCustomerrrAddress(IN CustomerName varchar(20)) 
+BEGIN 
+SELECT Address FROM CUSTOMERS WHERE Name  = CustomerName; 
+END // 
+DELIMITER ;
+
+CALL GetCustomerrrAddress('Sunath');
+
+-- 4
+DELIMITER // 
+CREATE PROCEDURE GetCustomerInfoo(IN CustomerAge INT) 
+BEGIN 
+SELECT * FROM CUSTOMERS WHERE AGE = CustomerAge; 
+END // 
+DELIMITER ;
+
+CALL GetCustomerInfoo(25); 
+
+-- 5 
+DELIMITER // 
+CREATE PROCEDURE GetCustomerAgeSalaryy(IN CustomerName varchar(20)) 
+BEGIN 
+SELECT Age,Salary  FROM CUSTOMERS WHERE Name = CustomerName; 
+END // 
+DELIMITER ;
+
+CALL GetCustomerAgeSalaryy('Sunath');
+
+DELIMITER //
+
+
+-- 6
+CREATE PROCEDURE GetCustomersByAgeRange(IN MinAge INT, IN MaxAge INT)
+BEGIN
+    SELECT * FROM CUSTOMERS
+    WHERE AGE BETWEEN MinAge AND MaxAge;
+END //
+
+DELIMITER ;
+
+CALL GetCustomersByAgeRange(20,30);
+
+
+
+
+-- Procedure with OUT parameter
+DELIMITER // 
+CREATE PROCEDURE GetDetail(OUT total INT) 
+BEGIN 
+SELECT COUNT(AGE) INTO total FROM CUSTOMERS 
+WHERE AGE = 25; 
+END // 
+DELIMITER ;
+
+
+CALL GetDetail(@total); 
+
+SELECT @total; 
+
+
+-- Exercise
+
+-- 1.
+DELIMITER //
+CREATE PROCEDURE GetMinSalary()
+BEGIN
+    SELECT MIN(SALARY) AS MinSalary
+    FROM CUSTOMERS;
+END //
+DELIMITER ;
+
+CALL GetMinSalary();
+
+
+-- 2.
+DELIMITER //
+CREATE PROCEDURE GetMaxSalary()
+BEGIN
+    SELECT MAX(SALARY) AS MaxSalary
+    FROM CUSTOMERS;
+END //
+DELIMITER ;
+
+CALL GetMaxSalary();
+
+-- 3.
+DELIMITER //
+CREATE PROCEDURE GetCustomerName(IN CustomerID INT)
+BEGIN
+    SELECT NAME FROM CUSTOMERS
+    WHERE ID = CustomerID;
+END //
+DELIMITER ;
+
+CALL GetCustomerName(3);
+
+
+-- 4.
+DELIMITER //
+CREATE PROCEDURE GetTotalSalary()
+BEGIN
+    SELECT SUM(SALARY) AS TotalSalary
+    FROM CUSTOMERS;
+END //
+DELIMITER ;
+
+CALL GetTotalSalary();
+
+
+-- 5.
+DELIMITER //
+CREATE PROCEDURE GetAverageAge()
+BEGIN
+    SELECT avg(Age) AS averageAge
+    FROM CUSTOMERS;
+END //
+DELIMITER ;
+
+CALL GetAverageAge();
+
+
+-- 6.
+DELIMITER // 
+CREATE PROCEDURE GetCustomerrrAddresss(IN CustomerName varchar(20)) 
+BEGIN 
+SELECT Address FROM CUSTOMERS WHERE Name  = CustomerName; 
+END // 
+DELIMITER ;
+
+CALL GetCustomerrrAddresss('Mahi');
+CALL GetCustomerrrAddresss('Sunath');
+
+
+-- 7.
+DELIMITER //
+CREATE PROCEDURE CountCustomersByAgeRange(IN MinAge INT, IN MaxAge INT)
+BEGIN
+    SELECT COUNT(*) AS CustomerCount
+    FROM CUSTOMERS
+    WHERE AGE BETWEEN MinAge AND MaxAge;
+END //
+DELIMITER ;
+
+CALL CountCustomersByAgeRange(20,40);
+
+
+-- Procedure with INOUT parameter
+
+DELIMITER // 
+CREATE PROCEDURE increaseSalary(INOUT Cust_Id Int,  INOUT curr_Salary Int) 
+BEGIN 
+SELECT SALARY INTO curr_Salary From CUSTOMERS Where ID = Cust_Id; 
+SET curr_Salary = curr_Salary * 1.1; 
+Update CUSTOMERS SET SALARY = curr_Salary Where ID = Cust_Id; 
+END // 
+DELIMITER ;
+
+SET @customerID = 1;
+
+SET @salary = 0.0; 
+CALL increaseSalary(@customerID, @salary);
+
+SELECT @salary AS updated_salary;
+
+
+ -- Exercise
+ 
+CREATE TABLE Product (
+    Product_ID INT PRIMARY KEY,
+    ProductName VARCHAR(50) ,
+    Quantity INT
+);
+
+desc Product;
+
+INSERT INTO Product VALUES 
+(1, 'Laptop', 50), 
+(2, 'Mouse', 100), 
+(3, 'Keyboard', 75),
+(4, 'Printer', 20), 
+(5, 'Scanner', 25),
+(6, 'Monitor', 35);
+
+select * from Product;
++------------+-------------+----------+
+| Product_ID | ProductName | Quantity |
++------------+-------------+----------+
+|          1 | Laptop      |       50 |
+|          2 | Mouse       |      100 |
+|          3 | Keyboard    |       75 |
+|          4 | Printer     |       20 |
+|          5 | Scanner     |       25 |
+|          6 | Monitor     |       35 |
++------------+-------------+----------+
+
+
+-- 1.
+DELIMITER // 
+CREATE PROCEDURE increaseQuantity(INOUT Cust_Id Int,  INOUT curr_quantity Int) 
+BEGIN 
+SELECT Quantity INTO curr_quantity From CUSTOMERS Where ID = Cust_Id; 
+SET curr_quantity = curr_quantity * 2; 
+Update CUSTOMERS SET Quantity = curr_quantity Where ID = Cust_Id; 
+END // 
+DELIMITER ;
+
+-- Define variables
+SET @customerID = 1;
+SET @Quantity = 2;
+
+-- Call the procedure
+-- CALL increaseQuantity(@customerID, @Quantity);
+
+-- Check the updated values
+SELECT @customerID AS CustomerID, @Quantity AS UpdatedQuantity;
++------------+-----------------+
+| CustomerID | UpdatedQuantity |
++------------+-----------------+
+|          1 |               2 |
++------------+-----------------+
+
+-- 2.
+DELIMITER // 
+CREATE PROCEDURE descreaseQuantity(INOUT Cust_Id Int,  INOUT curr_quantity Int) 
+BEGIN 
+SELECT Quantity INTO curr_quantity From CUSTOMERS Where ID = Cust_Id; 
+SET curr_quantity = curr_quantity - 2; 
+Update CUSTOMERS SET Quantity = curr_quantity Where ID = Cust_Id; 
+END // 
+DELIMITER ;
+
+SET @customerID = 3;
+SET @Quantity = 1;
+
+CALL descreaseQuantity(@customerID, Quantity);
+SELECT @customerID AS CustomerID, @Quantity AS UpdatedQuantity;
++------------+-----------------+
+| CustomerID | UpdatedQuantity |
++------------+-----------------+
+|          3 |               1 |
++------------+-----------------+
+
+DELIMITER //
+
+CREATE PROCEDURE ReplaceQuantity(
+    IN ProductID INT,
+    IN NewQuantity INT,
+    OUT UpdatedStock INT
+)
+BEGIN
+    -- Update the stock with the new value
+    UPDATE PRODUCTS
+    SET Quantity = NewQuantity
+    WHERE ID = ProductID;
+
+    -- Return the updated stock
+    SELECT Quantity INTO UpdatedStock
+    FROM PRODUCTS
+    WHERE ID = ProductID;
+END //
+
+DELIMITER ;
+
+SET @ProdID = 101;
+SET @NewQuantity = 50;
+SET @UpdatedStock = 0;
+
+CALL ReplaceQuantity(@ProdID, @NewQuantity, @UpdatedStock);
+SELECT @UpdatedStock AS NewStock;
++----------+
+| NewStock |
++----------+
+|        0 |
++----------+
+
+DELIMITER //
+
+CREATE PROCEDURE AdjustQuantity(
+    IN ProductID INT,
+    IN AdjustBy INT,
+    OUT UpdatedStock INT
+)
+BEGIN
+    -- Update the stock by adding the given value (positive or negative)
+    UPDATE PRODUCTS
+    SET Quantity = Quantity + AdjustBy
+    WHERE ID = ProductID;
+
+    -- Return the updated stock
+    SELECT Quantity INTO UpdatedStock
+    FROM PRODUCTS
+    WHERE ID = ProductID;
+END //
+
+DELIMITER ;
+
+SET @ProdID = 101;
+SET @AdjustBy = -5;  -- negative reduces, positive increases
+SET @UpdatedStock = 0;
+
+CALL AdjustQuantity(@ProdID, @AdjustBy, @UpdatedStock);
+SELECT @UpdatedStock AS NewStock;
++----------+
+| NewStock |
++----------+
+|        0 |
++----------+
+
+
+
+
+
+
+
