@@ -1,0 +1,727 @@
+2021/ICT/30
+
+27.04.2026
+
+ADBMS
+
+Triggers 
+====================================================================================================
+
+CREATE DATABASE triggers;
+USE triggers;
+
+CREATE TABLE emp_work_hours(   
+	name varchar(45) NOT NULL, 
+	occupation varchar(35) NOT NULL,     
+	working_date date,   
+	working_hours varchar(10)   
+);   
+
+INSERT INTO emp_work_hours VALUES     
+('Robin', 'Scientist', '2020-10-04', 12),   
+('Warner', 'Engineer', '2020-10-04', 10),   
+('Peter', 'Actor', '2020-10-04', 13),   
+('Marco', 'Doctor', '2020-10-04', 14),   
+('Brayden', 'Teacher', '2020-10-04', 12),   
+('Antonio', 'Business', '2020-10-04', 11);
+
+SELECT * FROM emp_work_hours;
++---------+------------+--------------+---------------+
+| name    | occupation | working_date | working_hours |
++---------+------------+--------------+---------------+
+| Robin   | Scientist  | 2020-10-04   | 12            |
+| Warner  | Engineer   | 2020-10-04   | 10            |
+| Peter   | Actor      | 2020-10-04   | 13            |
+| Marco   | Doctor     | 2020-10-04   | 14            |
+| Brayden | Teacher    | 2020-10-04   | 12            |
+| Antonio | Business   | 2020-10-04   | 11            |
++---------+------------+--------------+---------------+
+
+=====================================================================
+Trigger: BEFORE – INSERT 
+=====================================================================
+
+DELIMITER //
+
+CREATE TRIGGER bu_no_negative_hours
+BEFORE UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF NEW.working_hours < 0 THEN
+        SET NEW.working_hours = 0;
+    END IF;
+END //
+
+DELIMITER ;
+
+
+
+SELECT * FROM emp_work_hours;
++---------+------------+--------------+---------------+
+| name    | occupation | working_date | working_hours |
++---------+------------+--------------+---------------+
+| Robin   | Scientist  | 2020-10-04   | 12            |
+| Warner  | Engineer   | 2020-10-04   | 10            |
+| Peter   | Actor      | 2020-10-04   | 13            |
+| Marco   | Doctor     | 2020-10-04   | 14            |
+| Brayden | Teacher    | 2020-10-04   | 12            |
+| Antonio | Business   | 2020-10-04   | 11            |
++---------+------------+--------------+---------------+
+
+UPDATE emp_work_hours
+SET working_hours = -5
+WHERE name = 'Robin';
+
+SELECT * FROM emp_work_hours WHERE name = 'Robin';
++-------+------------+--------------+---------------+
+| name  | occupation | working_date | working_hours |
++-------+------------+--------------+---------------+
+| Robin | Scientist  | 2020-10-04   | 0             |
++-------+------------+--------------+---------------+
+If your trigger is working, working_hours will be 0, not -5.
+
+--------------------------------------
+
+Write a trigger to prevent name change before update. 
+
+DELIMITER //
+
+CREATE TRIGGER bi_default_working_date
+BEFORE INSERT ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF NEW.working_date IS NULL THEN
+        SET NEW.working_date = CURDATE();
+    END IF;
+END //
+
+DELIMITER ;
+
+INSERT INTO emp_work_hours VALUES ('Markus', 'Scientist', '2020-10-08', 14); 
+INSERT INTO emp_work_hours VALUES ('Alexander', 'Actor', '2020-10-12', 13);
+
+--------------------------------------
+
+1. To set the default working date to the current date if it is null. 
+
+DELIMITER //
+
+CREATE TRIGGER bi_default_working_date
+BEFORE INSERT ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF NEW.working_date IS NULL THEN
+        SET NEW.working_date = CURDATE();
+    END IF;
+END //
+
+DELIMITER ;
+
+
+
+
+2. To restrict the maximum working hour limit to 16 hours. 
+
+DELIMITER //
+
+CREATE TRIGGER bi_max_working_hours
+BEFORE INSERT ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF NEW.working_hours > 16 THEN
+        SET NEW.working_hours = 16;
+    END IF;
+END //
+
+DELIMITER ;
+
+
+
+3. To set the occupation to a default value in case of a null value. 
+
+DELIMITER //
+
+CREATE TRIGGER bi_default_occupation
+BEFORE INSERT ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF NEW.occupation IS NULL THEN
+        SET NEW.occupation = 'Unknown';
+    END IF;
+END //
+
+DELIMITER ;
+
+
+=====================================================================
+Trigger: After – INSERT 
+=====================================================================
+
+CREATE TABLE work_log (name varchar(25), action varchar(100)); 
+
+
+DELIMITER //
+
+CREATE TRIGGER ai_log_insert
+AFTER INSERT ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO work_log(name, action)
+    VALUES (NEW.name, 'Inserted');
+END //
+
+DELIMITER ;
+
+
+test it:
+INSERT INTO emp_work_hours 
+VALUES ('David', 'Engineer', '2020-10-20', 9);
+
+SELECT * FROM work_log;
++-------+----------+
+| name  | action   |
++-------+----------+
+| David | Inserted |
++-------+----------+
+
+AFTER INSERT trigger → runs after data is saved
+You cannot modify the inserted row
+You can only log or react (like inserting into another table)
+
+--------------------------------------
+
+1. To insert the record into a backup table. (Hint: Create the table appropriately)
+
+CREATE TABLE emp_work_hours_backup (
+    name VARCHAR(45),
+    occupation VARCHAR(35),
+    working_date DATE,
+    working_hours VARCHAR(10)
+);
+
+
+DELIMITER //
+CREATE TRIGGER ai_backup_insert
+AFTER INSERT ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO emp_work_hours_backup
+    (name, occupation, working_date, working_hours)
+    VALUES
+    (NEW.name, NEW.occupation, NEW.working_date, NEW.working_hours);
+END //
+
+DELIMITER ;
+
+--------------------------------------
+
+2. To keep an occupation log file.  
+(Hint: Create the necessary tables appropriately) 
+
+CREATE TABLE occupation_log (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(45),
+    occupation VARCHAR(35),
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+DELIMITER //
+CREATE TRIGGER ai_occupation_log
+AFTER INSERT ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO occupation_log (name, occupation)
+    VALUES (NEW.name, NEW.occupation);
+END //
+
+DELIMITER ;
+
+INSERT INTO emp_work_hours 
+VALUES ('Nimal', 'Teacher', '2020-10-20', 8);
+
+SELECT * FROM emp_work_hours_backup;
++-------+------------+--------------+---------------+
+| name  | occupation | working_date | working_hours |
++-------+------------+--------------+---------------+
+| Nimal | Teacher    | 2020-10-20   | 8             |
++-------+------------+--------------+---------------+
+
+SELECT * FROM occupation_log;
++--------+-------+------------+---------------------+
+| log_id | name  | occupation | log_time            |
++--------+-------+------------+---------------------+
+|      1 | Nimal | Teacher    | 2026-04-27 11:32:38 |
++--------+-------+------------+---------------------+
+
+
+=====================================================================
+Trigger: BEFORE – UPDATE  
+=====================================================================
+Write a trigger to ensure the working hour is a positive value before updating.
+
+DELIMITER //
+CREATE TRIGGER bu_no_negative_hours
+BEFORE UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF NEW.working_hours < 0 THEN
+        SET NEW.working_hours = 0;
+    END IF;
+END //
+
+DELIMITER ;
+
+
+test it:
+(if trigger is already exist just drop the trigger and again create it  DROP TRIGGER bu_no_negative_hours; )
+
+UPDATE emp_work_hours
+SET working_hours = -10
+WHERE name = 'Robin';
+
+SELECT * FROM emp_work_hours WHERE name = 'Robin';
++-------+------------+--------------+---------------+
+| name  | occupation | working_date | working_hours |
++-------+------------+--------------+---------------+
+| Robin | Scientist  | 2020-10-04   | 0             |
++-------+------------+--------------+---------------+
+
+Write a trigger to prevent name change before update.
+
+DELIMITER //
+
+CREATE TRIGGER bu_prevent_name_change
+BEFORE UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF OLD.name <> NEW.name THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Name cannot be changed';
+    END IF;
+END //
+
+DELIMITER ;
+
+UPDATE emp_work_hours
+SET working_hours = 10
+WHERE name = 'Robin';
+
+--------------------------------
+
+1. To limit the maximum working hours to 16 before the update.
+ 
+DELIMITER //
+CREATE TRIGGER bu_limit_max_hours
+BEFORE UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF NEW.working_hours > 16 THEN
+        SET NEW.working_hours = 16;
+    END IF;
+END //
+
+DELIMITER ;
+
+-------------------------------
+
+2. To ensure the working date is not a future date before the update. 
+
+DELIMITER //
+CREATE TRIGGER bu_no_future_date
+BEFORE UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF NEW.working_date > CURDATE() THEN
+        SET NEW.working_date = CURDATE();
+    END IF;
+END //
+
+DELIMITER ;
+
+
+=====================================================================
+Trigger: AFTER – UPDATE  
+=====================================================================
+
+Write a trigger to maintain the hours_log table to record the updated value of working 
+hours. (Hint: Create the hours_log table)  
+
+CREATE TABLE hours_log (
+    name VARCHAR(45),
+    old_hours VARCHAR(10),
+    new_hours VARCHAR(10),
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+DELIMITER //
+CREATE TRIGGER au_track_hours_change
+AFTER UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF OLD.working_hours <> NEW.working_hours THEN
+        INSERT INTO hours_log (name, old_hours, new_hours)
+        VALUES (NEW.name, OLD.working_hours, NEW.working_hours);
+    END IF;
+END //
+DELIMITER ;
+
+
+UPDATE emp_work_hours
+SET working_hours = 12
+WHERE name = 'Robin';
+
+SELECT * FROM hours_log;
++-------+-----------+-----------+---------------------+
+| name  | old_hours | new_hours | log_time            |
++-------+-----------+-----------+---------------------+
+| Robin | 25        | 12        | 2026-04-27 11:43:55 |
++-------+-----------+-----------+---------------------+
+
+
+OLD.working_hours → value before update
+NEW.working_hours → value after update
+Trigger runs after update, so it only logs changes (no modification allowed)
+
+------------------------------------------
+1. To maintain an updated log table with name and action attribute to keep a record 
+of all the updates. (Hint: use the work_log table) 
+
+-- Create the work_log2 table
+CREATE TABLE work_log2 (
+    name VARCHAR(45),
+    action VARCHAR(20),
+    old_hours VARCHAR(10),
+    new_hours VARCHAR(10),
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the AFTER UPDATE trigger
+DELIMITER //
+CREATE TRIGGER au_track_work_log
+AFTER UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF OLD.working_hours <> NEW.working_hours THEN
+        INSERT INTO work_log2 (name, action, old_hours, new_hours)
+        VALUES (NEW.name, 'UPDATE', OLD.working_hours, NEW.working_hours);
+    END IF;
+END //
+DELIMITER ;
+
+UPDATE emp_work_hours
+SET working_hours = 10
+WHERE name = 'Robin';
+
+SELECT * FROM work_log2;
++-------+--------+-----------+-----------+---------------------+
+| name  | action | old_hours | new_hours | log_time            |
++-------+--------+-----------+-----------+---------------------+
+| Robin | UPDATE | 12        | 10        | 2026-04-27 11:49:23 |
++-------+--------+-----------+-----------+---------------------+
+
+------------------------------------------
+2. To keep an alert message table for large deviations (more than 5 hours) in the 
+working hours update. (Hint: use the alert table)
+
+-- Create the alert table
+CREATE TABLE alert (
+    name VARCHAR(45),
+    old_hours VARCHAR(10),
+    new_hours VARCHAR(10),
+    deviation INT,
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the AFTER UPDATE trigger
+DELIMITER //
+CREATE TRIGGER au_alert_hours_change
+AFTER UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    DECLARE diff INT;
+    SET diff = ABS(NEW.working_hours - OLD.working_hours);
+
+    IF diff > 5 THEN
+        INSERT INTO alert (name, old_hours, new_hours, deviation)
+        VALUES (NEW.name, OLD.working_hours, NEW.working_hours, diff);
+    END IF;
+END //
+DELIMITER ;
+ 
+ 
+UPDATE emp_work_hours
+SET working_hours = 20
+WHERE name = 'Robin';
+
+SELECT * FROM alert;
++-------+-----------+-----------+-----------+---------------------+
+| name  | old_hours | new_hours | deviation | log_time            |
++-------+-----------+-----------+-----------+---------------------+
+| Robin | 10        | 20        |        10 | 2026-04-27 11:50:31 |
++-------+-----------+-----------+-----------+---------------------+
+
+
+------------------------------------------
+3. To track the occupation changes in a log file. (Hint: use the work_log table.) 
+
+-- Extend the work_log table to include occupation changes
+CREATE TABLE work_log (
+    name VARCHAR(45),
+    action VARCHAR(20),
+    attribute VARCHAR(20),
+    old_value VARCHAR(50),
+    new_value VARCHAR(50),
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the AFTER UPDATE trigger for occupation changes
+DELIMITER //
+CREATE TRIGGER au_track_occupation_change
+AFTER UPDATE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF OLD.occupation <> NEW.occupation THEN
+        INSERT INTO work_log (name, action, old_value, new_value, attribute)
+        VALUES (NEW.name, 'UPDATE', OLD.occupation, NEW.occupation, 'occupation');
+    END IF;
+END //
+DELIMITER ;
+
+
+UPDATE emp_work_hours
+SET occupation = 'Manager'
+WHERE name = 'Robin';
+
+SELECT * FROM work_log;
++-------+--------+------------+-----------+-----------+---------------------+
+| name  | action | attribute  | old_value | new_value | log_time            |
++-------+--------+------------+-----------+-----------+---------------------+
+| Robin | UPDATE | occupation | Scientist | Manager   | 2026-04-27 11:52:52 |
++-------+--------+------------+-----------+-----------+---------------------+
+
+=====================================================================
+Trigger: BEFORE – DELETE 
+=====================================================================
+
+Write a trigger to prevent the deletion of working hours of more than 12 hours.
+
+DELIMITER //
+CREATE TRIGGER bd_protect_high_hours
+BEFORE DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF OLD.working_hours > 12 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot delete high work hour record';
+    END IF;
+END //
+DELIMITER ;
+
+
+DELETE FROM emp_work_hours
+WHERE name = 'Robin';
+ERROR 1644 (45000): Cannot delete high work hour record
+
+
+-------------------------------------------------------------
+
+Write a trigger to back up before deleting. (Hint: Create the backup table) 
+
+-- Create the backup table
+CREATE TABLE emp_backup (
+    name VARCHAR(45),
+    occupation VARCHAR(45),
+    working_hours INT,
+    backup_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the BEFORE DELETE trigger
+DELIMITER //
+CREATE TRIGGER bd_backup
+BEFORE DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO emp_backup (name, occupation, working_hours)
+    VALUES (OLD.name, OLD.occupation, OLD.working_hours);
+END //
+DELIMITER ;
+
+
+DELETE FROM emp_work_hours
+WHERE name = 'Robin';
+
+SELECT * FROM emp_backup;
+
+
+
+-------------------------------------------------
+1. To keep a log of the delete attempt. (Hint: create a delete_log table with name 
+and action attributes.) 
+
+-- Create the delete_log table
+CREATE TABLE delete_log (
+    name VARCHAR(45),
+    action VARCHAR(20),
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the BEFORE DELETE trigger
+DELIMITER //
+CREATE TRIGGER bd_log_delete_attempt
+BEFORE DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO delete_log (name, action)
+    VALUES (OLD.name, 'DELETE_ATTEMPT');
+END //
+DELIMITER ;
+
+
+DELETE FROM emp_work_hours
+WHERE name = 'Robin';
+
+-------------------------------------------------
+2. To prevent the deletion of the record with the occupation ‘Doctor’. 
+
+DELIMITER //
+CREATE TRIGGER bd_prevent_doctor_delete
+BEFORE DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    IF OLD.occupation = 'Doctor' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot delete record with occupation Doctor';
+    END IF;
+END //
+DELIMITER ;
+
+
+DELETE FROM emp_work_hours
+WHERE name = 'Alice';
+
+
+
+-------------------------------------------------
+3. To validate that the record exists. 
+
+DELIMITER //
+CREATE TRIGGER bd_validate_record_exists
+BEFORE DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    -- Check if the record exists by validating OLD values
+    IF OLD.name IS NULL OR OLD.occupation IS NULL OR OLD.working_hours IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot delete: record does not exist or is invalid';
+    END IF;
+END //
+DELIMITER ;
+
+DELETE FROM emp_work_hours
+WHERE name = 'NonExistent';
+
+
+=====================================================================
+Trigger: AFTER – DELETE 
+=====================================================================
+
+Write a trigger to log the deletion of records. (Hint: use the work_log table)
+
+-- Assuming work_log table already exists
+CREATE TABLE work_log (
+    name VARCHAR(45),
+    action VARCHAR(20),
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the AFTER DELETE trigger
+DELIMITER //
+CREATE TRIGGER ad_log_delete
+AFTER DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO work_log (name, action)
+    VALUES (OLD.name, 'Deleted');
+END //
+DELIMITER ;
+
+---------------------------------------------------------------------
+1. To archive the deleted records. 
+
+-- Create the archive table
+CREATE TABLE emp_archive (
+    name VARCHAR(45),
+    occupation VARCHAR(45),
+    working_hours INT,
+    archive_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the AFTER DELETE trigger
+DELIMITER //
+CREATE TRIGGER ad_archive_deleted_records
+AFTER DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO emp_archive (name, occupation, working_hours)
+    VALUES (OLD.name, OLD.occupation, OLD.working_hours);
+END //
+DELIMITER ;
+
+
+DELETE FROM emp_work_hours
+WHERE name = 'Robin';
+
+
+
+
+---------------------------------------------------------------------
+2. To track deletion history by keeping track of the deleted time. 
+
+-- Create the deletion_history table
+CREATE TABLE deletion_history (
+    name VARCHAR(45),
+    occupation VARCHAR(45),
+    working_hours INT,
+    deleted_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the AFTER DELETE trigger
+DELIMITER //
+CREATE TRIGGER ad_track_deletion_history
+AFTER DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO deletion_history (name, occupation, working_hours)
+    VALUES (OLD.name, OLD.occupation, OLD.working_hours);
+END //
+DELIMITER ;
+
+
+DELETE FROM emp_work_hours
+WHERE name = 'Robin';
+
+---------------------------------------------------------------------
+3. To alert about the deletion action. (Hint: use the alerts table) 
+
+-- Create the alerts table
+CREATE TABLE alerts (
+    name VARCHAR(45),
+    action VARCHAR(20),
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the AFTER DELETE trigger
+DELIMITER //
+CREATE TRIGGER ad_alert_delete
+AFTER DELETE ON emp_work_hours
+FOR EACH ROW
+BEGIN
+    INSERT INTO alerts (name, action)
+    VALUES (OLD.name, 'DELETE_ALERT');
+END //
+DELIMITER ;
+
+DELETE FROM emp_work_hours
+WHERE name = 'Robin';
+
+
+
